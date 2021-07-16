@@ -3,6 +3,7 @@ package com.tecforte.blog.web.rest;
 import com.tecforte.blog.service.BlogService;
 import com.tecforte.blog.web.rest.errors.BadRequestAlertException;
 import com.tecforte.blog.service.dto.BlogDTO;
+import com.tecforte.blog.web.rest.EntryResource;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -98,7 +99,7 @@ public class BlogResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the blogDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/blogs/{id}")
-    public ResponseEntity<BlogDTO> getBlog(@PathVariable Long id) {
+    public ResponseEntity<BlogDTO> getBlog(@Valid @PathVariable Long id) {
         log.debug("REST request to get Blog : {}", id);
         Optional<BlogDTO> blogDTO = blogService.findOne(id);
         return ResponseUtil.wrapOrNotFound(blogDTO);
@@ -116,4 +117,12 @@ public class BlogResource {
         blogService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
+
+    @DeleteMapping("/blogs/clean")
+    public ResponseEntity<Void> cleanblog(@RequestBody String keyword) {
+        log.debug("REST request to clean Blog : {}", keyword);
+        //blogService.clean(keyword);
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, "121")).build();
+    }
+
 }

@@ -72,6 +72,7 @@ public class BlogService {
         return blogRepository.findById(id)
             .map(blogMapper::toDto);
     }
+    
 
     /**
      * Delete the blog by id.
@@ -81,5 +82,15 @@ public class BlogService {
     public void delete(Long id) {
         log.debug("Request to delete Blog : {}", id);
         blogRepository.deleteById(id);
+    }
+
+    public void clean(String keyword) {
+        List<BlogDTO> listB= blogRepository.findAllWithEagerRelationships().stream()
+            .map(blogMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
+
+         for(BlogDTO tmp:listB) {
+            log.debug(tmp.getName());
+         }
     }
 }

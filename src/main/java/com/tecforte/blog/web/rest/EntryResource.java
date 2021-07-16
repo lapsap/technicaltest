@@ -3,6 +3,9 @@ package com.tecforte.blog.web.rest;
 import com.tecforte.blog.service.EntryService;
 import com.tecforte.blog.web.rest.errors.BadRequestAlertException;
 import com.tecforte.blog.service.dto.EntryDTO;
+import com.tecforte.blog.service.dto.BlogDTO;
+import com.tecforte.blog.service.BlogService;
+import com.tecforte.blog.domain.enumeration.Emoji;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.lang.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,9 +44,28 @@ public class EntryResource {
     private String applicationName;
 
     private final EntryService entryService;
+    private final BlogService blogService;
 
-    public EntryResource(EntryService entryService) {
+    public EntryResource(EntryService entryService, BlogService blogService) {
         this.entryService = entryService;
+        this.blogService = blogService;
+    }
+
+    // function to check string if contains a word
+    private static boolean isContain(String source, String subItem){
+        String tmp = "";
+        for (int i =0; i<source.length(); i++) {
+            if (source.charAt(i) == ' '){
+                if (tmp.equals(subItem))
+                    return true;
+                tmp = "";
+            } else {
+                tmp += source.charAt(i);
+            }
+        }
+        if (tmp.equals(subItem))
+            return true;
+        return false;
     }
 
     /**
@@ -58,6 +81,34 @@ public class EntryResource {
         if (entryDTO.getId() != null) {
             throw new BadRequestAlertException("A new entry cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        Optional<BlogDTO> blogDTO = blogService.findOne(entryDTO.getBlogId());
+        blogDTO.ifPresent(dto -> {
+            if (dto.isPositive()) {
+                // part 1.1
+                if (entryDTO.getEmoji() == Emoji.SAD || entryDTO.getEmoji() == Emoji.ANGRY) {
+                    throw new BadRequestAlertException("Invalid Emoji", ENTITY_NAME, "invalidEmoji");
+                }
+                // part 1.2
+                if (isContain(entryDTO.getTitle().toLowerCase() ,"sad") || isContain(entryDTO.getContent().toLowerCase(), "sad") ||
+                isContain(entryDTO.getTitle().toLowerCase() ,"fear") || isContain(entryDTO.getContent().toLowerCase(), "fear") ||
+                isContain(entryDTO.getTitle().toLowerCase() ,"lonely") || isContain(entryDTO.getContent().toLowerCase(), "lonely")
+                ){
+                    throw new BadRequestAlertException("Invalid Content", ENTITY_NAME, "invalidContent");
+                }
+            } else {
+                // part 1.1
+                if (entryDTO.getEmoji() == Emoji.LIKE || entryDTO.getEmoji() == Emoji.HAHA) {
+                    throw new BadRequestAlertException("Invalid Emoji", ENTITY_NAME, "invalidEmoji");
+                }
+                // part 1.2
+                if (isContain(entryDTO.getTitle().toLowerCase() ,"love") || isContain(entryDTO.getContent().toLowerCase(), "love") ||
+                isContain(entryDTO.getTitle().toLowerCase() ,"happy") || isContain(entryDTO.getContent().toLowerCase(), "happy") ||
+                isContain(entryDTO.getTitle().toLowerCase() ,"trust") || isContain(entryDTO.getContent().toLowerCase(), "trust")
+                ){
+                    throw new BadRequestAlertException("Invalid Content", ENTITY_NAME, "invalidContent");
+                }
+            }
+        });
         EntryDTO result = entryService.save(entryDTO);
         return ResponseEntity.created(new URI("/api/entries/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
