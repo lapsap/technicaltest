@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service Implementation for managing {@link Entry}.
@@ -81,4 +83,54 @@ public class EntryService {
         log.debug("Request to delete Entry : {}", id);
         entryRepository.deleteById(id);
     }
+
+    // function to check string if contains a word
+    private static boolean isContain(String source, String subItem){
+        String tmp = "";
+        for (int i =0; i<source.length(); i++) {
+            if (source.charAt(i) == ' '){
+                if (tmp.equals(subItem))
+                    return true;
+                tmp = "";
+            } else {
+                tmp += source.charAt(i);
+            }
+        }
+        if (tmp.equals(subItem))
+            return true;
+        return false;
+    }
+
+    public void clean(String keyword) {
+        Pageable wholePage = Pageable.unpaged();
+        Page<EntryDTO> allentries = entryRepository.findAll(wholePage)
+            .map(entryMapper::toDto);
+        log.debug("hehe {}", allentries.getContent());
+        
+        List<EntryDTO> allData = allentries.getContent();
+        for (int i = 0; i < allData.size(); i++) {
+            EntryDTO tmp = allData.get(i);
+            if (isContain(tmp.getTitle().toLowerCase(), keyword) || isContain(tmp.getContent().toLowerCase(), keyword)){
+                entryRepository.deleteById(tmp.getId());
+            }
+        }
+    }
+
+    public void cleanwithid(String keyword, int blogid) {
+        Pageable wholePage = Pageable.unpaged();
+        Page<EntryDTO> allentries = entryRepository.findAll(wholePage)
+            .map(entryMapper::toDto);
+        log.debug("hehe {}", allentries.getContent());
+        
+        List<EntryDTO> allData = allentries.getContent();
+        for (int i = 0; i < allData.size(); i++) {
+            EntryDTO tmp = allData.get(i);
+            if (tmp.getBlogId() == blogid) {
+                if (isContain(tmp.getTitle().toLowerCase(), keyword) || isContain(tmp.getContent().toLowerCase(), keyword)){
+                    entryRepository.deleteById(tmp.getId());
+                }
+            }
+        }
+    }
+
 }

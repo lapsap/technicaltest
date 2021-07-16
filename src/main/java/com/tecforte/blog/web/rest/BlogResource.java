@@ -4,6 +4,7 @@ import com.tecforte.blog.service.BlogService;
 import com.tecforte.blog.web.rest.errors.BadRequestAlertException;
 import com.tecforte.blog.service.dto.BlogDTO;
 import com.tecforte.blog.web.rest.EntryResource;
+import com.tecforte.blog.service.EntryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -34,10 +35,12 @@ public class BlogResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final EntryService entryService;
     private final BlogService blogService;
 
-    public BlogResource(BlogService blogService) {
+    public BlogResource(BlogService blogService, EntryService entryService) {
         this.blogService = blogService;
+        this.entryService = entryService;
     }
 
     /**
@@ -121,7 +124,14 @@ public class BlogResource {
     @DeleteMapping("/blogs/clean")
     public ResponseEntity<Void> cleanblog(@RequestBody String keyword) {
         log.debug("REST request to clean Blog : {}", keyword);
-        //blogService.clean(keyword);
+        entryService.clean(keyword);
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, "121")).build();
+    }
+
+    @DeleteMapping("/blogs/{id}/clean")
+    public ResponseEntity<Void> cleanblogwithid(@RequestBody String keyword, int id) {
+        log.debug("REST request to clean Blog : {}", keyword);
+        entryService.cleanwithid(keyword, id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, "121")).build();
     }
 
